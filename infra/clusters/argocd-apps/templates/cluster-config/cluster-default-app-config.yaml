@@ -1,31 +1,29 @@
-{{- range .Values.clusters }}
-{{- $cluster := . }}
-{{- range .defaultApps }}
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: {{ .name }}
-  namespace: {{ $.Release.Namespace }}
+  labels:
+    argocd.argoproj.io/instance: clusters
+  name: dev-promtail
+  namespace: argocd
 spec:
   destination:
     name: ''
-    namespace: {{ .namespace }}
-    server: '{{ $cluster.server }}'
+    namespace: promtail
+    server: 'https://kubernetes.default.svc'
+  project: default
   sources:
-  - repoURL: '{{ .repoURL }}'
-    targetRevision: {{ .targetRevision }}
-    chart: {{ .chart }}
-    helm:
-      valueFiles: 
-      - $values/{{ .appConfigPath }}
-  - repoURL: '{{ $.Values.source.repoURL }}'
-    targetRevision: {{ $.Values.source.targetRevision }}
-    ref: values
-  project: {{ $.Values.project }}
+    - chart: promtail
+      helm:
+        valueFiles:
+          - values.yaml
+          - $values/infra/clusters/dev/app-configs/default-apps/promtail-values.yaml
+      repoURL: 'https://github.com/kube-tarian/helmrepo-supporting-tools.git'
+      targetRevision: 1.0.0
+    - ref: values
+      repoURL: 'https://github.com/akash4sh/argocd-test.git'
+      targetRevision: main
   syncPolicy:
-    syncOptions:
-      - CreateNamespace={{ $.Values.syncPolicy.CreateNamespace }}
     automated:
-      prune: {{ $.Values.syncPolicy.automated.prune }}
-{{- end }}
-{{- end }}
+      prune: true
+    syncOptions:
+      - CreateNamespace=true
