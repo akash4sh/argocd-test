@@ -1,33 +1,27 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  labels:
-    argocd.argoproj.io/instance: clusters
-  name: dev-promtail
+  name: dev-prom
   namespace: argocd
 spec:
-  source:
-    repoURL: https://kube-tarian.github.io/helmrepo-supporting-tools
-    targetRevision: "1.0.0"
-    chart: promtail
   destination:
     name: ''
-    namespace: promtail
+    namespace: prom
     server: 'https://kubernetes.default.svc'
-  project: default
   sources:
-    - chart: promtail
-      helm:
-        valueFiles:
-          - values.yaml
-          - $values/infra/clusters/dev/app-configs/default-apps/promtail-values.yaml
-      repoURL: 'https://kube-tarian.github.io/helmrepo-supporting-tools'
-      targetRevision: 1.0.0
-    - ref: values
-      repoURL: 'https://github.com/akash4sh/argocd-test.git'
-      targetRevision: main
+  - repoURL: 'https://kube-tarian.github.io/helmrepo-supporting-tools'
+    targetRevision: 1.0.3
+    chart: kube-prometheus-stack
+    helm:
+      valueFiles: 
+      - values.yaml
+      - $values/infra/clusters/dev/app-configs/default-apps/prometheus-values.yaml
+  - repoURL: 'https://github.com/akash4sh/argocd-test.git'
+    targetRevision: main
+    ref: values
+  project: default
   syncPolicy:
-    automated:
-      prune: true
     syncOptions:
       - CreateNamespace=true
+    automated:
+      prune: true
