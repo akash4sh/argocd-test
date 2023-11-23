@@ -1,27 +1,32 @@
+{{- range .Values.clusters }}
+{{- $cluster := . }}
+{{- range .defaultApps }}
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: dev-prom
-  namespace: argocd
+  name: {{ .name }}
+  namespace: {{ $.Release.Namespace }}
 spec:
   destination:
     name: ''
-    namespace: prom
-    server: 'https://kubernetes.default.svc'
+    namespace: {{ .namespace }}
+    server: '{{ $cluster.server }}'
   sources:
-  - repoURL: 'https://kube-tarian.github.io/helmrepo-supporting-tools'
-    targetRevision: 1.0.3
-    chart: kube-prometheus-stack
+  - repoURL: '{{ .repoURL }}'
+    targetRevision: {{ .targetRevision }}
+    chart: {{ .chart }}
     helm:
       valueFiles: 
       - values.yaml
-      - $values/infra/clusters/dev/app-configs/default-apps/prometheus-values.yaml
-  - repoURL: 'https://github.com/akash4sh/argocd-test.git'
-    targetRevision: main
+      - $values/{{ .appConfigPath }}
+  - repoURL: '{{ $.Values.source.repoURL }}'
+    targetRevision: {{ $.Values.source.targetRevision }}
     ref: values
-  project: default
+  project: {{ $.Values.project }}
   syncPolicy:
     syncOptions:
-      - CreateNamespace=true
+      - CreateNamespace={{ $.Values.syncPolicy.CreateNamespace }}
     automated:
-      prune: true
+      prune: {{ $.Values.syncPolicy.automated.prune }}
+{{- end }}
+{{- end }}
