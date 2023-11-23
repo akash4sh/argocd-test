@@ -8,10 +8,8 @@ spec:
   source:
     repoURL: https://github.com/intelops/capten-templates.git
     targetRevision: HEAD
-    path: infra/clusters/argocd-apps
-    helm:
-      valueFiles:
-      - values.yaml
+    path: infra/clusters/argocd-apps/
   destination:
     server: https://kubernetes.default.svc
     namespace: tekton-pipelines
+
