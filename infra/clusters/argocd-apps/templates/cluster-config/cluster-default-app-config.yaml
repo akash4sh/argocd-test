@@ -6,6 +6,8 @@ metadata:
   name: dev-promtail
   namespace: argocd
 spec:
+  source:
+    path: promtail
   destination:
     name: ''
     namespace: promtail
